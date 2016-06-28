@@ -22,16 +22,25 @@ export default class PlayerExperience extends soundworks.Experience {
 
     this.platform = this.require('platform', { features: ['web-audio', 'wake-lock'] });
     this.checkin = this.require('checkin', { showDialog: false });
+    this.sync = this.require('sync');
     this.loader = this.require('loader', {
       assetsDomain: assetsDomain,
       files: audioFiles,
     });
+
+    this.motionInput = this.require("motion-input", {
+      descriptors: ["rotationRate"]
+    });
+
+    this.turnStarted = 0;
+    this.myTurn = false;
+    this.points = 0;
   }
 
   init() {
     // initialize the view
     this.viewTemplate = viewTemplate;
-    this.viewContent = { title: `Let's go!` };
+    this.viewContent = { title: `Wait...` };
     this.viewCtor = soundworks.CanvasView;
     this.viewOptions = { preservePixelRatio: true };
     this.view = this.createView();
@@ -53,12 +62,12 @@ export default class PlayerExperience extends soundworks.Experience {
 
     // play the second loaded buffer when the message `play` is received from
     // the server, the message is send when another player joins the experience.
-    this.receive('play', () => {
-      const delay = Math.random();
-      const src = audioContext.createBufferSource();
-      src.buffer = this.loader.buffers[1];
-      src.connect(audioContext.destination);
-      src.start(audioContext.currentTime + delay);
+    this.receive('go', (turnStartedTime) => {
+      this.myTurn = true;
+      this.turnStartedTime = turnStartedTime;
+
+      this.view.content.title = `Your turn`;
+      this.view.render();
     });
 
     // initialize rendering
@@ -73,6 +82,59 @@ export default class PlayerExperience extends soundworks.Experience {
       ctx.rect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.fill();
       ctx.restore();
+    });
+
+    this.motionInput.addListener("rotationRate", (data) => {
+      if(!this.myTurn) return;
+
+      const currentTime = this.sync.getSyncTime();
+
+      const gyroX = data[0];
+      const gyroY = data[1];
+      const gyroZ = data[2];
+
+      const mag = Math.sqrt(gyroX * gyroX + gyroY * gyroY + gyroZ + gyroZ);
+      if(mag > 50) {
+        let turnTime;
+        if(!this.turnStartedTime) turnTime = 1;
+        else turnTime = currentTime - this.turnStartedTime;
+        
+        if(turnTime < 0.8 || turnTime > 1.2) {
+          // play quack
+          // MISSED
+          const src = audioContext.createBufferSource();
+          src.buffer = this.loader.buffers[2];
+          src.connect(audioContext.destination);
+
+          if(turnTime > 1)
+            src.playbackRate.value = 0.7;
+
+          src.start(audioContext.currentTime);
+
+          this.view.content.title = `Missed<br>${this.points} points`;
+          this.view.render();
+
+          this.send("missed");
+          this.points = 0;
+        }
+        else 
+        {
+           // play hit sound
+          const src = audioContext.createBufferSource();
+          src.buffer = this.loader.buffers[0];
+          src.connect(audioContext.destination);
+          src.start(audioContext.currentTime);       
+
+          this.view.content.title = `Hit<br>${this.points} points`;
+          this.view.render();
+
+          this.send("hit", mag, currentTime);
+
+          this.points += 15;
+        }
+
+        this.myTurn = false;
+      } 
     });
   }
 }
