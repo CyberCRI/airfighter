@@ -16,26 +16,23 @@ const viewTemplate = `
 const audio = soundworks.audio;
 
 class Synth extends audio.TimeEngine {
-  constructor(period, sendFunction) {
+  constructor(sync, period, sendFunction) {
     super();
 
+    this.sync = sync;
     this.period = period // eight note duration
     this.sendFunction = sendFunction;
   }
 
   advanceTime(time) {
-    // use time to play a sound at time
-    const src = audioContext.createOscillator();
-    src.connect(audioContext.destination);
-    src.start(time);
-
-    const nextEventNbrPeriod = Math.floor(Math.random() * 10 + 4);
+    const nextEventNbrPeriod = Math.floor(Math.random() * 8 + 4);
+    console.log("scheduled ding for", nextEventNbrPeriod, "periods");
+    //const nextEventNbrPeriod = 1;
     const period = nextEventNbrPeriod * this.period;
     const nextTime = time + period;
     
-    // 
-    const nextSyncTime = convertToSyncTime(nextTime);
-    this.sendFunction('next-event', nextSyncTime);
+    const nextSyncTime = this.sync.getAudioTime(nextTime);
+    this.sendFunction(nextSyncTime);
 
     return nextTime;
   }
@@ -49,7 +46,6 @@ export default class ControllerExperience extends soundworks.Experience {
   constructor(assetsDomain, audioFiles) {
     super();
 
-    console.log('test');
     this.platform = this.require('platform', { features: ['web-audio', 'wake-lock'] });
     this.checkin = this.require('checkin', { showDialog: false });
     this.sync = this.require('sync');
@@ -58,9 +54,6 @@ export default class ControllerExperience extends soundworks.Experience {
       assetsDomain: assetsDomain,
       files: audioFiles,
     });
-
-    this.lastLabel = null;
-    this.lastTimeProgression = null;
   }
 
   init() {
@@ -75,16 +68,40 @@ export default class ControllerExperience extends soundworks.Experience {
   start() {
     super.start(); // don't forget this
 
-    console.log('test');
     if (!this.hasStarted)
       this.init();
 
     this.show();
+
+    var hasStartedMusic = false;
+
+    this.synth = new Synth(this.sync, 0.5, (nextTime) => { 
+      if(hasStartedMusic) {
+        // use time to play a sound at time
+        const src = audioContext.createBufferSource();
+        src.buffer = this.loader.buffers[1];
+        src.connect(audioContext.destination);
+        src.start(nextTime);        
+      } else {
+        // play music
+        const src = audioContext.createBufferSource();
+        src.loop = true;
+        src.buffer = this.loader.buffers[2];
+        src.connect(audioContext.destination);
+        src.start(nextTime);
+
+        hasStartedMusic = true;
+      }
+    });
+
+    this.scheduler.add(this.synth);
 
     // play the first loaded buffer immediately
     const src = audioContext.createBufferSource();
     src.buffer = this.loader.buffers[0];
     src.connect(audioContext.destination);
     src.start(audioContext.currentTime);
+
+    console
   }
 }
