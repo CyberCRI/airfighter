@@ -1,6 +1,17 @@
 import * as soundworks from 'soundworks/client';
 import PlayerRenderer from './PlayerRenderer';
 
+import hhmmModel from './model.json';
+// var hhmmModel = require('./model.json');
+
+//import HhmmDecoder from 'xmm-client/src';
+//const hhmmDecoder = new HhmmDecoder();
+
+var xmmClient = require('xmm-client');
+
+const hhmmDecoder = new xmmClient.HhmmDecoder();
+hhmmDecoder.model = hhmmModel;
+
 const audioContext = soundworks.audioContext;
 
 const viewTemplate = `
@@ -28,9 +39,43 @@ export default class PlayerExperience extends soundworks.Experience {
       files: audioFiles,
     });
 
-    this.motionInput = this.require("motion-input", {
-      descriptors: ["rotationRate"]
-    });
+    // this.motionInput = this.require("motion-input", {
+    //   descriptors: ["rotationRate"]
+    // });
+
+    var that = this;
+    if (window.DeviceMotionEvent) {
+      window.addEventListener('devicemotion', function(e) {
+        var sextet = [
+          e.acceleration.x, e.acceleration.y, e.acceleration.z,
+          e.rotationRate.alpha, e.rotationRate.beta, e.rotationRate.gamma
+        ];
+
+        console.log("DeviceMotionEvent", e);
+
+        // in adition to gesture following control of the granular player's position,
+        // the granular player's volume is controlled by gesture intensity
+        // features.setAccelerometer(sextet[0], sextet[1], sextet[2]);
+        // features.setGyroscope(sextet[3], sextet[4], sextet[5]);
+        // features.update(function(err, res) {
+        //   volume.gain.value = Math.min(res.accIntensity.norm * 0.1, 1);
+        // });
+
+        if(that.view) {
+          that.view.content.title = "Moved " + sextet[0];
+          that.view.render();
+        }
+
+        hhmmDecoder.filter(sextet, function(err, hhmmResults) {
+          if(err) { 
+            console.log("can't filter movement", err); 
+            return;
+          }
+
+          that.send("moved", hhmmResults.likeliest);
+        });
+      });
+    }
 
     this.turnStarted = 0;
     this.myTurn = false;
@@ -70,6 +115,11 @@ export default class PlayerExperience extends soundworks.Experience {
       this.view.render();
     });
 
+    this.receive('otherMoved', (label) => {
+      this.view.content.title = "Other: " + label;
+      this.view.render();
+    });
+
     // initialize rendering
     this.renderer = new PlayerRenderer(100, 100);
     this.view.addRenderer(this.renderer);
@@ -83,58 +133,57 @@ export default class PlayerExperience extends soundworks.Experience {
       ctx.fill();
       ctx.restore();
     });
-
-    this.motionInput.addListener("rotationRate", (data) => {
-      if(!this.myTurn) return;
-
-      const currentTime = this.sync.getSyncTime();
-
-      const gyroX = data[0];
-      const gyroY = data[1];
-      const gyroZ = data[2];
-
-      const mag = Math.sqrt(gyroX * gyroX + gyroY * gyroY + gyroZ + gyroZ);
-      if(mag > 50) {
-        let turnTime;
-        if(!this.turnStartedTime) turnTime = 1;
-        else turnTime = currentTime - this.turnStartedTime;
-        
-        if(turnTime < 0.8 || turnTime > 1.2) {
-          // play quack
-          // MISSED
-          const src = audioContext.createBufferSource();
-          src.buffer = this.loader.buffers[2];
-          src.connect(audioContext.destination);
-
-          if(turnTime > 1)
-            src.playbackRate.value = 0.7;
-
-          src.start(audioContext.currentTime);
-
-          this.view.content.title = `Missed<br>${this.points} points`;
-          this.view.render();
-
-          this.send("missed");
-          this.points = 0;
-        }
-        else 
-        {
-           // play hit sound
-          const src = audioContext.createBufferSource();
-          src.buffer = this.loader.buffers[0];
-          src.connect(audioContext.destination);
-          src.start(audioContext.currentTime);       
-
-          this.view.content.title = `Hit<br>${this.points} points`;
-          this.view.render();
-
-          this.send("hit", mag, currentTime);
-
-          this.points += 15;
-        }
-
-        this.myTurn = false;
-      } 
-    });
   }
+
+    /*if(!this.myTurn) return;
+
+    const currentTime = this.sync.getSyncTime();
+
+    const gyroX = data[0];
+    const gyroY = data[1];
+    const gyroZ = data[2];
+
+    const mag = Math.sqrt(gyroX * gyroX + gyroY * gyroY + gyroZ + gyroZ);
+    if(mag > 50) {
+      let turnTime;
+      if(!this.turnStartedTime) turnTime = 1;
+      else turnTime = currentTime - this.turnStartedTime;
+      
+      if(turnTime < 0.8 || turnTime > 1.2) {
+        // play quack
+        // MISSED
+        const src = audioContext.createBufferSource();
+        src.buffer = this.loader.buffers[2];
+        src.connect(audioContext.destination);
+
+        if(turnTime > 1)
+          src.playbackRate.value = 0.7;
+
+        src.start(audioContext.currentTime);
+
+        this.view.content.title = `Missed<br>${this.points} points`;
+        this.view.render();
+
+        this.send("missed");
+        this.points = 0;
+      }
+      else 
+      {
+         // play hit sound
+        const src = audioContext.createBufferSource();
+        src.buffer = this.loader.buffers[0];
+        src.connect(audioContext.destination);
+        src.start(audioContext.currentTime);       
+
+        this.view.content.title = `Hit<br>${this.points} points`;
+        this.view.render();
+
+        this.send("hit", mag, currentTime);
+
+        this.points += 15;
+      }
+
+      this.myTurn = false;
+    } */
+  //}
 }

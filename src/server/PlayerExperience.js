@@ -20,7 +20,24 @@ export default class PlayerExperience extends Experience {
   enter(client) {
     super.enter(client);
 
-    this.receive(client, 'hit', (mag, hitTime) => {
+    var clients = this.clients;
+    function findOtherClient() {
+      for(let otherClient of clients) {
+        if(otherClient.index != client.index) {
+          return otherClient;
+        }
+      }
+
+      throw new Error("Can't fiind other client");
+    }
+
+    this.receive(client, 'moved', (label, hitTime) => {
+      console.log("moved recieved from", client.index, "label", label);
+
+      //this.send(findOtherClient(), "otherMoved", label);
+    });
+
+    /*this.receive(client, 'hit', (mag, hitTime) => {
       console.log("hit recieved from", client.index, "mag", mag);
       if(this.playingClient.index != client.index) return;
 
@@ -50,7 +67,9 @@ export default class PlayerExperience extends Experience {
           this.playingClient = otherClient;
         }
       }
-    });
+    });*/
+
+
 
     // When the game starts
     if(this.clients.length > 1) {
