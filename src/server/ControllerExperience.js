@@ -1,11 +1,30 @@
-import { BasicSharedController } from 'soundworks/server';
+import { Experience } from 'soundworks/server';
 
-class ControllerExperience extends BasicSharedController {
-  constructor(clientType) {
+class ControllerExperience extends Experience {
+  constructor(clientType, experiences) {
     super(clientType);
 
-    this.checkin = this.require('checkin', { showDialog: false });
+    this.experiences = experiences;
+    this.checkin = this.require('checkin');
     this.sync = this.require('sync');
+
+  }
+
+  // if anything needs to happen when a client enters the performance (*i.e.*
+  // starts the experience on the client side), write it in the `enter` method
+  enter(client) {
+    super.enter(client);
+
+    console.log("Controller client entering");
+
+    this.receive(client, 'ding', () => {
+      console.log("sending ding to server");
+      this.experiences.player.sendDing();
+    });
+  }
+
+  exit(client) {
+    super.exit(client);
   }
 }
 

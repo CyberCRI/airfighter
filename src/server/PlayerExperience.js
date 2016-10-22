@@ -2,9 +2,10 @@ import { Experience } from 'soundworks/server';
 
 // server-side 'player' experience.
 export default class PlayerExperience extends Experience {
-  constructor(clientType) {
+  constructor(clientType, experiences) {
     super(clientType);
 
+    this.experiences = experiences;
     this.checkin = this.require('checkin');
     this.sync = this.require('sync');
     this.sharedConfig = this.require('shared-config');
@@ -15,10 +16,18 @@ export default class PlayerExperience extends Experience {
   // if anything needs to append when the experience starts
   start() {}
 
+  sendDing() {
+    for(let client of this.clients) {
+      this.send(client, "ding");
+    } 
+  }
+
   // if anything needs to happen when a client enters the performance (*i.e.*
   // starts the experience on the client side), write it in the `enter` method
   enter(client) {
     super.enter(client);
+
+    console.log("Player Client entering");
 
     var clients = this.clients;
     function findOtherClient() {
@@ -39,6 +48,10 @@ export default class PlayerExperience extends Experience {
       console.log("REAL moved recieved from", client.index, "label", label, "timeProgression", timeProgression);
 
       //this.send(findOtherClient(), "otherMoved", label);
+    });
+
+    this.receive(client, 'failed', (label, timeProgression) => {
+      console.log("Failed recieved from", client.index, "label", label, "timeProgression", timeProgression);
     });
 
     this.receive(client, 'debugMotion', (label, timeProgression) => {

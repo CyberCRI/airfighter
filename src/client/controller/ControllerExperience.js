@@ -81,7 +81,9 @@ export default class ControllerExperience extends soundworks.Experience {
         const src = audioContext.createBufferSource();
         src.buffer = this.loader.buffers[1];
         src.connect(audioContext.destination);
-        src.start(nextTime);        
+        src.start(nextTime);
+
+        this.send("ding");        
       } else {
         // play music
         const src = audioContext.createBufferSource();

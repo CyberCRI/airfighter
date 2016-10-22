@@ -93,7 +93,18 @@ export default class PlayerExperience extends soundworks.Experience {
             && that.lastTimeProgression <= 0.6 
             && currentTimeProgression > 0.6)
           {
-            that.send("moved", hhmmResults.likeliest, currentTimeProgression);
+            if(that.activePeriod) 
+            {
+              that.send("moved", hhmmResults.likeliest, currentTimeProgression);
+            }
+            else 
+            {
+              that.send("failed", hhmmResults.likeliest, currentTimeProgression); 
+              const src = audioContext.createBufferSource();
+              src.buffer = that.loader.buffers[5];
+              src.connect(audioContext.destination);
+              src.start(audioContext.currentTime);
+            }
 
             if(hhmmResults.likeliest == "Punch") {
               const src = audioContext.createBufferSource();
@@ -150,9 +161,7 @@ export default class PlayerExperience extends soundworks.Experience {
   start() {
     super.start(); // don't forget this
 
-    // controller
-    // const synth = new Synth();
-    // this.scheduler.add(synth);
+    this.activePeriod = false;
 
     if (!this.hasStarted)
       this.init();
@@ -175,6 +184,12 @@ export default class PlayerExperience extends soundworks.Experience {
       this.view.render();
     });
 
+    this.receive('ding', () => {
+      this.activePeriod = true;
+      // This is ugly -> wait 4 beats = 2 s
+      setTimeout(() => { this.activePeriod = false; }, 2000);
+    });
+
     this.receive('otherMoved', (label) => {
       this.view.content.title = "Other: " + label;
       this.view.render();
@@ -194,56 +209,4 @@ export default class PlayerExperience extends soundworks.Experience {
       ctx.restore();
     });
   }
-
-    /*if(!this.myTurn) return;
-
-    const currentTime = this.sync.getSyncTime();
-
-    const gyroX = data[0];
-    const gyroY = data[1];
-    const gyroZ = data[2];
-
-    const mag = Math.sqrt(gyroX * gyroX + gyroY * gyroY + gyroZ + gyroZ);
-    if(mag > 50) {
-      let turnTime;
-      if(!this.turnStartedTime) turnTime = 1;
-      else turnTime = currentTime - this.turnStartedTime;
-      
-      if(turnTime < 0.8 || turnTime > 1.2) {
-        // play quack
-        // MISSED
-        const src = audioContext.createBufferSource();
-        src.buffer = this.loader.buffers[2];
-        src.connect(audioContext.destination);
-
-        if(turnTime > 1)
-          src.playbackRate.value = 0.7;
-
-        src.start(audioContext.currentTime);
-
-        this.view.content.title = `Missed<br>${this.points} points`;
-        this.view.render();
-
-        this.send("missed");
-        this.points = 0;
-      }
-      else 
-      {
-         // play hit sound
-        const src = audioContext.createBufferSource();
-        src.buffer = this.loader.buffers[0];
-        src.connect(audioContext.destination);
-        src.start(audioContext.currentTime);       
-
-        this.view.content.title = `Hit<br>${this.points} points`;
-        this.view.render();
-
-        this.send("hit", mag, currentTime);
-
-        this.points += 15;
-      }
-
-      this.myTurn = false;
-    } */
-  //}
 }
