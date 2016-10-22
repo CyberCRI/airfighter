@@ -86,7 +86,7 @@ export default class PlayerExperience extends soundworks.Experience {
           //that.send("debugLikelihoods", hhmmResults.likelihoods); 
 
           var currentTimeProgression = hhmmResults.timeProgressions[hhmmResults.likeliestIndex];
-          //that.send("debugMotion", hhmmResults.likeliest, currentTimeProgression);
+          // that.send("debugMotion", hhmmResults.likeliest, currentTimeProgression);
 
           if(that.lastLabel
             && hhmmResults.likeliest == that.lastLabel 
@@ -106,6 +106,19 @@ export default class PlayerExperience extends soundworks.Experience {
               src.connect(audioContext.destination);
               src.start(audioContext.currentTime);
             }
+            else if(hhmmResults.likeliest == "Uppercut") {
+              const src = audioContext.createBufferSource();
+              src.buffer = that.loader.buffers[3];
+              src.connect(audioContext.destination);
+              src.start(audioContext.currentTime);
+            }
+            else if(hhmmResults.likeliest == "SuperUppercut") {
+              const src = audioContext.createBufferSource();
+              src.buffer = that.loader.buffers[4];
+              src.connect(audioContext.destination);
+              src.start(audioContext.currentTime);
+            }
+
 
             that.lastLabel = null;
             that.lastTimeProgression = null;
