@@ -43,6 +43,9 @@ export default class PlayerExperience extends soundworks.Experience {
     //   descriptors: ["rotationRate"]
     // });
 
+    this.lastLabel = null;
+    this.lastTimeProgression = null;
+
     var that = this;
     if (window.DeviceMotionEvent) {
       window.addEventListener('devicemotion', function(e) {
@@ -72,7 +75,18 @@ export default class PlayerExperience extends soundworks.Experience {
             return;
           }
 
-          that.send("moved", hhmmResults.likeliest);
+          var currentTimeProgression = hhmmResults.timeProgressions[hhmmResults.likeliestIndex];
+          that.send("debugMotion", hhmmResults.likeliest, currentTimeProgression);
+
+          if(hhmmResults.likeliest == that.lastLabel 
+            && that.lastTimeProgression <= 0.65 
+            && currentTimeProgression >= 0.6)
+          {
+            that.send("moved", hhmmResults.likeliest, currentTimeProgression);
+          }
+
+          that.lastLabel = hhmmResults.likeliest;
+          that.lastTimeProgression = currentTimeProgression;
         });
       });
     }
