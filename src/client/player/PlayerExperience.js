@@ -27,31 +27,10 @@ const viewTemplate = `
 
 const audio = soundworks.audio;
 
-class Synth extends audio.TimeEngine {
-  constructor(period, sendFunction) {
-    this.period = period // eight note duration
-    this.sendFunction = sendFunction;
-  }
-
-  advanceTime(time) {
-    // use time to play a sound at time
-    const src = audioContext.createOscillator();
-    src.connect(audioContext.destination);
-    src.start(time);
-
-    const nextEventNbrPeriod = Math.floor(Math.random() * 10 + 4);
-    const period = nextEventNbrPeriod * this.period;
-    const nextTime = time + period;
-    
-    // 
-    const nextSyncTime = convertToSyncTime(nextTime);
-    this.sendFunction('next-event', nextSyncTime);
-
-    return nextTime;
-  }
-}
-
-// this.scheduler
+// player
+// this.receive('next-event', (nextSyncTime) => {
+//   this.scheduler.defer(nextSynthTime, () => {});
+// });
 
 // this experience plays a sound when it starts, and plays another sound when
 // other clients join the experience
@@ -157,6 +136,10 @@ export default class PlayerExperience extends soundworks.Experience {
 
   start() {
     super.start(); // don't forget this
+
+    // controller
+    // const synth = new Synth();
+    // this.scheduler.add(synth);
 
     if (!this.hasStarted)
       this.init();
