@@ -75,13 +75,15 @@ export default class PlayerExperience extends soundworks.Experience {
             return;
           }
 
+          //that.send("debugLikelihoods", hhmmResults.likelihoods); 
+
           var currentTimeProgression = hhmmResults.timeProgressions[hhmmResults.likeliestIndex];
           //that.send("debugMotion", hhmmResults.likeliest, currentTimeProgression);
 
           if(that.lastLabel
             && hhmmResults.likeliest == that.lastLabel 
-            && that.lastTimeProgression <= 0.4 
-            && currentTimeProgression > 0.4)
+            && that.lastTimeProgression <= 0.6 
+            && currentTimeProgression > 0.6)
           {
             that.send("moved", hhmmResults.likeliest, currentTimeProgression);
 

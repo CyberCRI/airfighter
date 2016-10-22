@@ -31,6 +31,10 @@ export default class PlayerExperience extends Experience {
       throw new Error("Can't fiind other client");
     }
 
+    this.receive(client, 'debugLikelihoods', (likelihoods) => {
+      console.log("likelihoods", client.index, likelihoods);
+    });
+
     this.receive(client, 'moved', (label, timeProgression) => {
       console.log("REAL moved recieved from", client.index, "label", label, "timeProgression", timeProgression);
 
@@ -39,8 +43,6 @@ export default class PlayerExperience extends Experience {
 
     this.receive(client, 'debugMotion', (label, timeProgression) => {
       console.log("DEBUG moved recieved from", client.index, "label", label, "timeProgression", timeProgression);
-
-      //this.send(findOtherClient(), "otherMoved", label);
     });
 
     /*this.receive(client, 'hit', (mag, hitTime) => {
