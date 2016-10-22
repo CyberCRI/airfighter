@@ -76,17 +76,36 @@ export default class PlayerExperience extends soundworks.Experience {
           }
 
           var currentTimeProgression = hhmmResults.timeProgressions[hhmmResults.likeliestIndex];
-          that.send("debugMotion", hhmmResults.likeliest, currentTimeProgression);
+          //that.send("debugMotion", hhmmResults.likeliest, currentTimeProgression);
 
-          if(hhmmResults.likeliest == that.lastLabel 
-            && that.lastTimeProgression <= 0.65 
-            && currentTimeProgression >= 0.6)
+          if(that.lastLabel
+            && hhmmResults.likeliest == that.lastLabel 
+            && that.lastTimeProgression <= 0.4 
+            && currentTimeProgression > 0.4)
           {
             that.send("moved", hhmmResults.likeliest, currentTimeProgression);
-          }
 
-          that.lastLabel = hhmmResults.likeliest;
-          that.lastTimeProgression = currentTimeProgression;
+            if(hhmmResults.likeliest == "Punch") {
+              const src = audioContext.createBufferSource();
+              src.buffer = that.loader.buffers[1];
+              src.connect(audioContext.destination);
+              src.start(audioContext.currentTime);
+            } else if(hhmmResults.likeliest == "Block") {
+              const src = audioContext.createBufferSource();
+              src.buffer = that.loader.buffers[2];
+              src.connect(audioContext.destination);
+              src.start(audioContext.currentTime);
+            }
+
+            that.lastLabel = null;
+            that.lastTimeProgression = null;
+
+            hhmmDecoder.reset();
+
+          } else {
+            that.lastLabel = hhmmResults.likeliest;
+            that.lastTimeProgression = currentTimeProgression;
+          }
         });
       });
     }
