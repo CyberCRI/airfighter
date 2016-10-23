@@ -8,7 +8,11 @@ import viewContent from '../shared/viewContent';
 const files = [
   'sounds/sound-welcome.mp3',
   'sounds/Air_Fighter_Ding_5.mp3',
-  'sounds/Air_Fighter_Music.mp3'  
+  'sounds/Air_Fighter_Music.mp3',
+  'sounds/Air_Fighter_Round_1.mp3',  
+  'sounds/Air_Fighter_Round_2.mp3',  
+  'sounds/Air_Fighter_Round_3.mp3',
+  'sounds/Air_Fighter_Music_GameOver.mp3'
 ];
 
 // launch application when document is fully loaded

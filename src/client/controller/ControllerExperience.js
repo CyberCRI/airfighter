@@ -70,6 +70,54 @@ export default class ControllerExperience extends soundworks.Experience {
 
     this.show();
 
+    //this.receive("startGame", this.startGame);
+
+    this.startGame();
+
+    this.roundsWon = [0, 0];
+
+    // play the first loaded buffer immediately
+    /*const src = audioContext.createBufferSource();
+    src.buffer = this.loader.buffers[0];
+    src.connect(audioContext.destination);
+    src.start(audioContext.currentTime);*/
+  }
+
+  startGame() {
+    this.currentRound = 0;
+    this.playRound(0);
+
+    const syncTime = this.scheduler.syncTime;
+    this.scheduler.defer(() => this.startRound(), syncTime + 7, true);
+    this.scheduler.defer(() => this.roundIsOver(0), syncTime + 10, true);
+    this.scheduler.defer(() => this.roundIsOver(1), syncTime + 20, true);
+    this.scheduler.defer(() => this.roundIsOver(0), syncTime + 30, true);
+
+    console.log('starting game: ', syncTime);
+  }
+
+  // winner is 0 or 1
+  roundIsOver(winner) {
+    this.roundsWon[winner] += 1;
+
+    this.stopRound(); // stop music
+    if(this.roundsWon[0] == 2 || this.roundsWon[1] == 2 || this.roundsWon[0] + this.roundsWon[1] == 3) {
+      // game over
+      const src = audioContext.createBufferSource();
+      src.buffer = this.loader.buffers[6];
+      src.connect(audioContext.destination);
+      src.start(audioContext.currentTime);
+    } else {
+      // go the next round
+      this.currentRound++;
+      this.playRound(this.currentRound);
+      this.scheduler.defer(() => this.startRound(), this.scheduler.syncTime + 3, true);
+    }
+  }
+
+  startRound() {
+    console.log("starting round");
+
     var hasStartedMusic = false;
 
     const dingFunction = () => {
@@ -82,11 +130,10 @@ export default class ControllerExperience extends soundworks.Experience {
       // play music
       console.log("starting music");
 
-      const src = audioContext.createBufferSource();
-      //src.loop = true;
-      src.buffer = this.loader.buffers[2];
-      src.connect(audioContext.destination);
-      src.start(thisTime);
+      this.musicSrc = audioContext.createBufferSource();
+      this.musicSrc.buffer = this.loader.buffers[2];
+      this.musicSrc.connect(audioContext.destination);
+      this.musicSrc.start(thisTime);
     });
 
     this.dingSynth = new Synth(this.sync, 0.5, dingFunction, (thisTime, nextTime) => { 
@@ -99,26 +146,27 @@ export default class ControllerExperience extends soundworks.Experience {
 
         this.send("ding");
       } else {
-        // // play music
-        // const src = audioContext.createBufferSource();
-        // src.loop = true;
-        // src.buffer = this.loader.buffers[2];
-        // src.connect(audioContext.destination);
-        // src.start(nextTime);
-
         hasStartedMusic = true;
       }
     });
 
     this.scheduler.add(this.dingSynth);
     this.scheduler.add(this.musicSynth);
+  }
 
-    // play the first loaded buffer immediately
+  stopRound() {
+    console.log("stopping round");
+    this.scheduler.remove(this.dingSynth);
+    this.scheduler.remove(this.musicSynth);
+
+    this.musicSrc.stop();
+  }
+
+  playRound(number) {
+    console.log("playing round", number, "sound");
     const src = audioContext.createBufferSource();
-    src.buffer = this.loader.buffers[0];
+    src.buffer = this.loader.buffers[3 + number];
     src.connect(audioContext.destination);
     src.start(audioContext.currentTime);
-
-    console
   }
 }

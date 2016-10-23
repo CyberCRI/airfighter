@@ -92,15 +92,20 @@ export default class PlayerExperience extends Experience {
 
 
 
-    // When the game starts
-    if(this.clients.length > 1) {
-      this.broadcast(client.type, client, 'play');
-      console.log("ready to play");
+    // // When the game starts
+    // if(this.clients.length > 1) {
+    //   this.broadcast(client.type, client, 'play');
+    //   console.log("ready to play");
 
-      this.playingClient = this.clients[0];
-      this.send(this.playingClient, "go");
-    }
+    //   this.playingClient = this.clients[0];
+    //   this.send(this.playingClient, "go");
+    // }
   }
+
+  isReadyToPlay() {
+    return this.clients.length > 1;
+  }
+
 
   exit(client) {
     super.exit(client);
