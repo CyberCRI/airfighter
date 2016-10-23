@@ -107,20 +107,19 @@ export default class PlayerExperience extends soundworks.Experience {
 
               if(that.activePeriod) 
               {
-                //that.send("moved", hhmmResults.likeliest, currentTimeProgression);
-                that.movementToSend = [hhmmResults.likeliest, currentTimeProgression];
+                that.send("moved", hhmmResults.likeliest, currentTimeProgression);
+                //that.movementToSend = [hhmmResults.likeliest, currentTimeProgression];
               }
-              else
-              {
-                that.send("failed", hhmmResults.likeliest, currentTimeProgression); 
-                that.srcSoundStun = audioContext.createBufferSource();
-                that.srcSoundStun.loop = true;
-                that.srcSoundStun.buffer = that.loader.buffers[5];
-                that.srcSoundStun.connect(audioContext.destination);
-                that.srcSoundStun.start(audioContext.currentTime);
-                that.nextStun = true;
-                that.vibrator.brouuum();
-              }
+              // else
+              // {
+              //   that.send("failed", hhmmResults.likeliest, currentTimeProgression); 
+              //   that.srcSoundStun = audioContext.createBufferSource();
+              //   that.srcSoundStun.buffer = that.loader.buffers[5];
+              //   that.srcSoundStun.connect(audioContext.destination);
+              //   that.srcSoundStun.start(audioContext.currentTime);
+              //   that.nextStun = true;
+              //   that.vibrator.brouuum();
+              // }
 
               if(hhmmResults.likeliest == "Punch") {
                 const src = audioContext.createBufferSource();
@@ -216,7 +215,6 @@ export default class PlayerExperience extends soundworks.Experience {
     this.health = STARTING_HEALTH;
     this.activePeriod = false;
     this.moved = true;
-    this.nextStun = false;
     this.srcSoundStun = null;
 
     if (!this.hasStarted)
@@ -291,20 +289,16 @@ export default class PlayerExperience extends soundworks.Experience {
         this.activePeriod = true;
         this.currentLabel = null;
         this.moved = false;
-        if (this.srcSoundStun) {
-          this.srcSoundStun.stop();
-          this.srcSoundStun = null;
-        }
       }
       else
         this.nextStun = false;
       // This is ugly -> wait 4 beats = 2 s
       setTimeout(() => { 
         this.activePeriod = false; 
-        if(this.movementToSend) {
-          this.send("moved", this.movementToSend[0], this.movementToSend[1]);
-          this.movementToSend = null;
-        }
+        // if(this.movementToSend) {
+        //   this.send("moved", this.movementToSend[0], this.movementToSend[1]);
+        //   this.movementToSend = null;
+        // }
       }, 2000);
     });
 
