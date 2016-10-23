@@ -54,6 +54,7 @@ export default class PlayerExperience extends soundworks.Experience {
 
     this.lastLabel = null;
     this.lastTimeProgression = null;
+    this.currentLabel = null;
 
     this.vibrator = new Vibrator();
 
@@ -96,55 +97,60 @@ export default class PlayerExperience extends soundworks.Experience {
             && that.lastTimeProgression <= 0.6 
             && currentTimeProgression > 0.6)
           {
-            if(that.activePeriod) 
+            if (that.moved == false)
             {
-              that.send("moved", hhmmResults.likeliest, currentTimeProgression);
-            }
-            else 
-            {
-              that.send("failed", hhmmResults.likeliest, currentTimeProgression); 
-              const src = audioContext.createBufferSource();
-              src.buffer = that.loader.buffers[5];
-              src.connect(audioContext.destination);
-              src.start(audioContext.currentTime);
-              this.vibrator.brouuum();
-            }
+              that.moved = true;
+              if(that.activePeriod) 
+              {
+                that.send("moved", hhmmResults.likeliest, currentTimeProgression);
+              }
+              else
+              {
+                that.send("failed", hhmmResults.likeliest, currentTimeProgression); 
+                that.srcSoundStun = audioContext.createBufferSource();
+                that.srcSoundStun.loop = true;
+                that.srcSoundStun.buffer = that.loader.buffers[5];
+                that.srcSoundStun.connect(audioContext.destination);
+                that.srcSoundStun.start(audioContext.currentTime);
+                that.nextStun = true;
+                that.vibrator.brouuum();
+              }
 
-            if(hhmmResults.likeliest == "Punch") {
-              const src = audioContext.createBufferSource();
-              src.buffer = that.loader.buffers[1];
-              src.connect(audioContext.destination);
-              src.start(audioContext.currentTime);
-              this.vibrator.brouum();
-            } else if(hhmmResults.likeliest == "Block") {
-              const src = audioContext.createBufferSource();
-              src.buffer = that.loader.buffers[2];
-              src.connect(audioContext.destination);
-              src.start(audioContext.currentTime);
-              this.vibrator.brouum();
+              if(hhmmResults.likeliest == "Punch") {
+                const src = audioContext.createBufferSource();
+                src.buffer = that.loader.buffers[1];
+                src.connect(audioContext.destination);
+                src.start(audioContext.currentTime);
+                that.vibrator.brouum();
+              } else if(hhmmResults.likeliest == "Block") {
+                const src = audioContext.createBufferSource();
+                src.buffer = that.loader.buffers[2];
+                src.connect(audioContext.destination);
+                src.start(audioContext.currentTime);
+                that.vibrator.brouum();
+              }
+              else if(hhmmResults.likeliest == "Uppercut") {
+                const src = audioContext.createBufferSource();
+                src.buffer = that.loader.buffers[3];
+                src.connect(audioContext.destination);
+                src.start(audioContext.currentTime);
+                that.vibrator.brouum();
+              }
+              else if(hhmmResults.likeliest == "SuperUppercut") {
+                const src = audioContext.createBufferSource();
+                src.buffer = that.loader.buffers[4];
+                src.connect(audioContext.destination);
+                src.start(audioContext.currentTime);
+                that.vibrator.brouuum();
+              }
+
+              that.lastLabel = null;
+              that.lastTimeProgression = null;
+              that.currentLabel = hhmmResults.likeliest;
+              hhmmDecoder.reset();
             }
-            else if(hhmmResults.likeliest == "Uppercut") {
-              const src = audioContext.createBufferSource();
-              src.buffer = that.loader.buffers[3];
-              src.connect(audioContext.destination);
-              src.start(audioContext.currentTime);
-              vibrator.brouum();
-            }
-            else if(hhmmResults.likeliest == "SuperUppercut") {
-              const src = audioContext.createBufferSource();
-              src.buffer = that.loader.buffers[4];
-              src.connect(audioContext.destination);
-              src.start(audioContext.currentTime);
-              this.vibrator.brouuum();
-            }
-
-
-            that.lastLabel = null;
-            that.lastTimeProgression = null;
-
-            hhmmDecoder.reset();
-
           } else {
+            that.currentLabel = null;
             that.lastLabel = hhmmResults.likeliest;
             that.lastTimeProgression = currentTimeProgression;
           }
@@ -167,9 +173,36 @@ export default class PlayerExperience extends soundworks.Experience {
   }
 
   start() {
-    super.start(); // don't forget this
+    function playSound(index)
+    {
+      const src = audioContext.createBufferSource();
+      src.buffer = this.loader.buffers[index];
+      src.connect(audioContext.destination);
+      src.start(audioContext.currentTime);
+    }
 
+    function soundHealth()
+    {
+      if (health == 4)
+        playSound(8);
+      else if (health == 3)
+        playSound(9);
+      else if (health == 2)
+        playSound(10);
+      else if (health == 1)
+        playSound(11);
+      else if (health == 0)
+      {
+        playSound(12);
+        this.send("end");
+      }
+    }
+    super.start(); // don't forget this
+    this.health = 5;
     this.activePeriod = false;
+    this.moved = false;
+    this.nextStun = false;
+    this.srcSoundStun = null;
 
     if (!this.hasStarted)
       this.init();
@@ -193,8 +226,60 @@ export default class PlayerExperience extends soundworks.Experience {
       this.view.render();
     });
 
+    this.receive('move', (label) => {
+        if (label == 'SuperUppercut')
+        {
+          if (this.currentLabel != 'SuperUppercut')
+          {
+            playSound(7);
+            this.health -= 2;
+          }
+          else
+          {
+            playSound(6);
+          }
+        }
+        else if (label == 'Uppercut')
+        {
+          if (this.currentLabel == 'Uppercut')
+          {
+            playSound(6);
+          }
+          else if (this.currentLabel == 'Punch')
+          {
+            //nothing
+          }
+          else
+          {
+            playSound(7);
+            this.health -= 1;
+          }
+        }
+        else if (label == 'Punch')
+        {
+          if (this.currentLabel == 'Punch' || this.currentLabel == 'Block')
+          {
+            playSound(6);
+          }
+          else
+          {
+            playSound(7)
+            health -= 1;
+            soundHealth();
+          }
+        }
+    });
+
     this.receive('ding', () => {
-      this.activePeriod = true;
+      if (this.nextStun == false)
+      {
+        this.activePeriod = true;
+        this.moved = false;
+        if (this.srcSoundStun)
+          this.srcSoundStun.stop();
+      }
+      else
+        this.nextStun = false;
       // This is ugly -> wait 4 beats = 2 s
       setTimeout(() => { this.activePeriod = false; }, 2000);
     });

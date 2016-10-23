@@ -11,7 +11,15 @@ const files = [
   'sounds/Air_Fighter_Defense_5.mp3',
   'sounds/Air_Fighter_Attack_Uppercut_4.mp3',
   'sounds/Air_Fighter_Combo_Attack.mp3',
-  'sounds/Air_Fighter_Combo_Stun.mp3'
+  'sounds/Air_Fighter_Combo_Stun.mp3',
+  'sounds/Air_Fighter_Block_6.mp3',
+  'sounds/Air_Fighter_Hit_4.mp3',
+  'sounds/Air_Fighter_4_Points_Left.mp3',
+  'sounds/Air_Fighter_3_Points_Left.mp3',
+  'sounds/Air_Fighter_2_Points_Left.mp3',
+  'sounds/Air_Fighter_1_Point_Left.mp3',
+  'sounds/Air_Fighter_You_Loose.mp3',
+  'sounds/Air_Fighter_You_Win.mp3'
 ];
 
 // launch application when document is fully loaded

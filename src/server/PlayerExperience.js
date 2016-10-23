@@ -37,8 +37,12 @@ export default class PlayerExperience extends Experience {
         }
       }
 
-      throw new Error("Can't fiind other client");
+      throw new Error("Can't find other client");
     }
+    
+    this.receive(client, 'end', () => {
+      this.experiences.controller.roundIsOver(client.index);
+    })
 
     this.receive(client, 'debugLikelihoods', (likelihoods) => {
       console.log("likelihoods", client.index, likelihoods);
@@ -46,7 +50,7 @@ export default class PlayerExperience extends Experience {
 
     this.receive(client, 'moved', (label, timeProgression) => {
       console.log("REAL moved recieved from", client.index, "label", label, "timeProgression", timeProgression);
-
+      this.send(findOtherClient(), 'move', label);
       //this.send(findOtherClient(), "otherMoved", label);
     });
 
@@ -92,15 +96,20 @@ export default class PlayerExperience extends Experience {
 
 
 
-    // When the game starts
-    if(this.clients.length > 1) {
-      this.broadcast(client.type, client, 'play');
-      console.log("ready to play");
+    // // When the game starts
+    // if(this.clients.length > 1) {
+    //   this.broadcast(client.type, client, 'play');
+    //   console.log("ready to play");
 
-      this.playingClient = this.clients[0];
-      this.send(this.playingClient, "go");
-    }
+    //   this.playingClient = this.clients[0];
+    //   this.send(this.playingClient, "go");
+    // }
   }
+
+  isReadyToPlay() {
+    return this.clients.length > 1;
+  }
+
 
   exit(client) {
     super.exit(client);
