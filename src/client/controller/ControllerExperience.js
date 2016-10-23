@@ -119,6 +119,7 @@ export default class ControllerExperience extends soundworks.Experience {
 
   startRound() {
     console.log("starting round");
+    this.send("startRound");
 
     var hasStartedMusic = false;
 

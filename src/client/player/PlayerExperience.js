@@ -27,6 +27,8 @@ const viewTemplate = `
 
 const audio = soundworks.audio;
 
+const STARTING_HEALTH = 2;
+
 
 // player
 // this.receive('next-event', (nextSyncTime) => {
@@ -195,14 +197,15 @@ export default class PlayerExperience extends soundworks.Experience {
       else if (this.health <= 0)
       {
         playSound(12);
+        this.moved = true;
         this.send("end");
       }
     }
 
     super.start(); // don't forget this
-    this.health = 2;
+    this.health = STARTING_HEALTH;
     this.activePeriod = false;
-    this.moved = false;
+    this.moved = true;
     this.nextStun = false;
     this.srcSoundStun = null;
 
@@ -286,23 +289,19 @@ export default class PlayerExperience extends soundworks.Experience {
       setTimeout(() => { this.activePeriod = false; }, 2000);
     });
 
+    this.receive('startRound', () => {
+      this.health = STARTING_HEALTH;
+      this.moved = false;
+    });
+
+    this.receive('win', () => {
+      this.moved = true;
+      playSound(13);
+    });
+
     this.receive('otherMoved', (label) => {
       this.view.content.title = "Other: " + label;
       this.view.render();
-    });
-
-    // initialize rendering
-    this.renderer = new PlayerRenderer(100, 100);
-    this.view.addRenderer(this.renderer);
-
-    // this function is called before each update (`Renderer.render`) of the canvas
-    this.view.setPreRender(function(ctx, dt) {
-      ctx.save();
-      ctx.globalAlpha = 0.05;
-      ctx.fillStyle = '#000000';
-      ctx.rect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      ctx.fill();
-      ctx.restore();
     });
   }
 }
