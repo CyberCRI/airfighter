@@ -132,7 +132,7 @@ export default class ControllerExperience extends soundworks.Experience {
     var hasStartedMusic = false;
 
     const dingFunction = () => {
-      const nextEventNbrPeriod = Math.floor(Math.random() * 8 + 4);
+      const nextEventNbrPeriod = Math.floor(Math.random() * 6 + 6);
       console.log("scheduled ding for", nextEventNbrPeriod, "periods");
       return nextEventNbrPeriod;
     }; 

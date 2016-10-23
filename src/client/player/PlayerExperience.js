@@ -100,7 +100,7 @@ export default class PlayerExperience extends soundworks.Experience {
             && that.lastTimeProgression <= 0.6 
             && currentTimeProgression > 0.6)
           {
-            if (that.moved == false)
+            if (that.moved == false && hhmmResults.likeliest != "Idle")
             {
               that.moved = true;
               that.currentLabel = hhmmResults.likeliest;
@@ -153,9 +153,8 @@ export default class PlayerExperience extends soundworks.Experience {
               that.lastLabel = null;
               that.lastTimeProgression = null;
               hhmmDecoder.reset();
-            }
+            } // end if (that.moved == false)
           } else {
-            that.currentLabel = null;
             that.lastLabel = hhmmResults.likeliest;
             that.lastTimeProgression = currentTimeProgression;
           }
@@ -290,9 +289,12 @@ export default class PlayerExperience extends soundworks.Experience {
       if (this.nextStun == false)
       {
         this.activePeriod = true;
+        this.currentLabel = null;
         this.moved = false;
-        if (this.srcSoundStun)
+        if (this.srcSoundStun) {
           this.srcSoundStun.stop();
+          this.srcSoundStun = null;
+        }
       }
       else
         this.nextStun = false;
