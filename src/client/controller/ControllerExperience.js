@@ -110,6 +110,7 @@ export default class ControllerExperience extends soundworks.Experience {
     this.stopRound(); // stop music
     if(this.roundsWon[0] == 2 || this.roundsWon[1] == 2 || this.roundsWon[0] + this.roundsWon[1] == 3) {
       // game over
+      console.log("Playing game over");
       const src = audioContext.createBufferSource();
       src.buffer = this.loader.buffers[6];
       src.connect(audioContext.destination);
