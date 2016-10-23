@@ -27,6 +27,7 @@ const viewTemplate = `
 
 const audio = soundworks.audio;
 
+
 // player
 // this.receive('next-event', (nextSyncTime) => {
 //   this.scheduler.defer(nextSynthTime, () => {});
@@ -53,6 +54,8 @@ export default class PlayerExperience extends soundworks.Experience {
 
     this.lastLabel = null;
     this.lastTimeProgression = null;
+
+    this.vibrator = new Vibrator();
 
     var that = this;
     if (window.DeviceMotionEvent) {
@@ -104,6 +107,7 @@ export default class PlayerExperience extends soundworks.Experience {
               src.buffer = that.loader.buffers[5];
               src.connect(audioContext.destination);
               src.start(audioContext.currentTime);
+              this.vibrator.brouuum();
             }
 
             if(hhmmResults.likeliest == "Punch") {
@@ -111,23 +115,27 @@ export default class PlayerExperience extends soundworks.Experience {
               src.buffer = that.loader.buffers[1];
               src.connect(audioContext.destination);
               src.start(audioContext.currentTime);
+              this.vibrator.brouum();
             } else if(hhmmResults.likeliest == "Block") {
               const src = audioContext.createBufferSource();
               src.buffer = that.loader.buffers[2];
               src.connect(audioContext.destination);
               src.start(audioContext.currentTime);
+              this.vibrator.brouum();
             }
             else if(hhmmResults.likeliest == "Uppercut") {
               const src = audioContext.createBufferSource();
               src.buffer = that.loader.buffers[3];
               src.connect(audioContext.destination);
               src.start(audioContext.currentTime);
+              vibrator.brouum();
             }
             else if(hhmmResults.likeliest == "SuperUppercut") {
               const src = audioContext.createBufferSource();
               src.buffer = that.loader.buffers[4];
               src.connect(audioContext.destination);
               src.start(audioContext.currentTime);
+              this.vibrator.brouuum();
             }
 
 
@@ -173,6 +181,7 @@ export default class PlayerExperience extends soundworks.Experience {
     src.buffer = this.loader.buffers[0];
     src.connect(audioContext.destination);
     src.start(audioContext.currentTime);
+    this.vibrator.broum();
 
     // play the second loaded buffer when the message `play` is received from
     // the server, the message is send when another player joins the experience.
@@ -210,3 +219,29 @@ export default class PlayerExperience extends soundworks.Experience {
     });
   }
 }
+
+class Vibrator {
+  constructor() {
+    this.navigator = window.navigator;
+  }
+
+  broum() {
+    if (this.vibrator)
+      this.vibrator.vibrate(500);
+  }
+
+  brouum() {
+    if (this.vibrator)
+      this.vibrator.vibrate(1000);
+  }
+
+  brouuum() {
+    if (this.vibrator)
+      this.vibrator.vibrate(2000);
+  } 
+
+  stop() {
+    if (this.vibrator)
+      this.vibrator.vibrate(0);
+  } 
+};
