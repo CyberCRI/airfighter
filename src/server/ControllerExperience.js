@@ -37,6 +37,10 @@ class ControllerExperience extends Experience {
     }*/
   }
 
+  roundIsOver(playerIndex) {
+    this.send(this.clients[0], "roundIsOver", playerIndex);
+  }
+
   isReadyToPlay() {
     return true;
     //return this.clients.length > 0 && this.experiences.player.isReadyToPlay();

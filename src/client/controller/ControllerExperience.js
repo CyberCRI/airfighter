@@ -76,6 +76,8 @@ export default class ControllerExperience extends soundworks.Experience {
 
     this.roundsWon = [0, 0];
 
+    this.receive("roundIsOver", (playerIndex) => this.roundIsOver(playerIndex));
+
     // play the first loaded buffer immediately
     /*const src = audioContext.createBufferSource();
     src.buffer = this.loader.buffers[0];
@@ -89,9 +91,9 @@ export default class ControllerExperience extends soundworks.Experience {
 
     const syncTime = this.scheduler.syncTime;
     this.scheduler.defer(() => this.startRound(), syncTime + 7, true);
-    this.scheduler.defer(() => this.roundIsOver(0), syncTime + 10, true);
-    this.scheduler.defer(() => this.roundIsOver(1), syncTime + 20, true);
-    this.scheduler.defer(() => this.roundIsOver(0), syncTime + 30, true);
+    // this.scheduler.defer(() => this.roundIsOver(0), syncTime + 10, true);
+    // this.scheduler.defer(() => this.roundIsOver(1), syncTime + 20, true);
+    // this.scheduler.defer(() => this.roundIsOver(0), syncTime + 30, true);
 
     console.log('starting game: ', syncTime);
   }
@@ -130,9 +132,13 @@ export default class ControllerExperience extends soundworks.Experience {
       // play music
       console.log("starting music");
 
+      const env = audioContext.createGain();
+      env.connect(audioContext.destination);
+      env.gain.value = 0.5;
+
       this.musicSrc = audioContext.createBufferSource();
       this.musicSrc.buffer = this.loader.buffers[2];
-      this.musicSrc.connect(audioContext.destination);
+      this.musicSrc.connect(env);
       this.musicSrc.start(thisTime);
     });
 

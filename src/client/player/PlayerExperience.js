@@ -166,7 +166,8 @@ export default class PlayerExperience extends soundworks.Experience {
   }
 
   start() {
-    function playSound(index)
+
+    const playSound = (index) =>
     {
       const src = audioContext.createBufferSource();
       src.buffer = this.loader.buffers[index];
@@ -174,24 +175,25 @@ export default class PlayerExperience extends soundworks.Experience {
       src.start(audioContext.currentTime);
     }
 
-    function soundHealth()
+    const soundHealth = () =>
     {
-      if (health == 4)
+      if (this.health == 4)
         playSound(8);
-      else if (health == 3)
+      else if (this.health == 3)
         playSound(9);
-      else if (health == 2)
+      else if (this.health == 2)
         playSound(10);
-      else if (health == 1)
+      else if (this.health == 1)
         playSound(11);
-      else if (health == 0)
+      else if (this.health <= 0)
       {
         playSound(12);
         this.send("end");
       }
     }
+
     super.start(); // don't forget this
-    this.health = 5;
+    this.health = 2;
     this.activePeriod = false;
     this.moved = false;
     this.nextStun = false;
@@ -256,7 +258,7 @@ export default class PlayerExperience extends soundworks.Experience {
           else
           {
             playSound(7)
-            health -= 1;
+            this.health -= 1;
             soundHealth();
           }
         }

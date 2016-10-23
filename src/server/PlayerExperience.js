@@ -27,21 +27,11 @@ export default class PlayerExperience extends Experience {
   enter(client) {
     super.enter(client);
 
-    console.log("Player Client entering");
-
-    var clients = this.clients;
-    function findOtherClient() {
-      for(let otherClient of clients) {
-        if(otherClient.index != client.index) {
-          return otherClient;
-        }
-      }
-
-      throw new Error("Can't find other client");
-    }
+    console.log("Player Client entering", client.index);
     
     this.receive(client, 'end', () => {
-      this.experiences.controller.roundIsOver(client.index);
+      console.log("recieved end from player", client.index);
+      this.experiences.controller.roundIsOver(client.index == 0 ? 1 : 0);
     })
 
     this.receive(client, 'debugLikelihoods', (likelihoods) => {
@@ -50,8 +40,9 @@ export default class PlayerExperience extends Experience {
 
     this.receive(client, 'moved', (label, timeProgression) => {
       console.log("REAL moved recieved from", client.index, "label", label, "timeProgression", timeProgression);
-      this.send(findOtherClient(), 'move', label);
-      //this.send(findOtherClient(), "otherMoved", label);
+      var otherClientIndex = client.index == 0 ? 1 : 0;
+      console.log("otherClientIndex", otherClientIndex);
+      this.send(this.clients[otherClientIndex], 'move', label);
     });
 
     this.receive(client, 'failed', (label, timeProgression) => {
