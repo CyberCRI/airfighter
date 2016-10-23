@@ -184,22 +184,30 @@ export default class PlayerExperience extends soundworks.Experience {
       src.start(audioContext.currentTime);
     }
 
+    const playDeferredSound = (index) => 
+    {
+      const syncTime = this.scheduler.syncTime;
+      this.scheduler.defer(() => playSound(index), syncTime + 1, true);
+    }
+
     const soundHealth = () =>
     {
       if (this.health == 4)
-        playSound(8);
+        playDeferredSound(8);
       else if (this.health == 3)
-        playSound(9);
+        playDeferredSound(9);
       else if (this.health == 2)
-        playSound(10);
+        playDeferredSound(10);
       else if (this.health == 1)
-        playSound(11);
+        playDeferredSound(11);
       else if (this.health <= 0)
       {
-        playSound(12);
+        playDeferredSound(12);
         this.moved = true;
         this.send("end");
       }
+
+      this.send('delayNextDing');
     }
 
     super.start(); // don't forget this

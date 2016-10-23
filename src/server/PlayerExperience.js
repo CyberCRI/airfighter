@@ -62,6 +62,8 @@ export default class PlayerExperience extends Experience {
     this.receive(client, 'debugMotion', (label, timeProgression) => {
       console.log("DEBUG moved recieved from", client.index, "label", label, "timeProgression", timeProgression);
     });
+
+    this.receive(client, "delayNextDing", () => { this.experiences.controller.delayNextDing(); });
   }
 
   isReadyToPlay() {

@@ -41,6 +41,10 @@ class ControllerExperience extends Experience {
     this.send(this.clients[0], "roundIsOver", playerIndex);
   }
 
+  delayNextDing() {
+    this.send(this.clients[0], "delayNextDing");    
+  }
+
   isReadyToPlay() {
     return true;
     //return this.clients.length > 0 && this.experiences.player.isReadyToPlay();

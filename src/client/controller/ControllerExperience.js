@@ -78,6 +78,11 @@ export default class ControllerExperience extends soundworks.Experience {
 
     this.receive("roundIsOver", (playerIndex) => this.roundIsOver(playerIndex));
 
+    this.receive("delayNextDing", () => { 
+      console.log("Delaying next ding");
+      this.delayNextDing = true; 
+    });
+
     // play the first loaded buffer immediately
     /*const src = audioContext.createBufferSource();
     src.buffer = this.loader.buffers[0];
@@ -112,14 +117,16 @@ export default class ControllerExperience extends soundworks.Experience {
     } else {
       // go the next round
       this.currentRound++;
-      this.playRound(this.currentRound);
-      this.scheduler.defer(() => this.startRound(), this.scheduler.syncTime + 3, true);
+      this.scheduler.defer(() => this.playRound(this.currentRound), this.scheduler.syncTime + 3, true);
+      this.scheduler.defer(() => this.startRound(), this.scheduler.syncTime + 6, true);
     }
   }
 
   startRound() {
     console.log("starting round");
     this.send("startRound");
+
+    this.delayNextDing = false;
 
     var hasStartedMusic = false;
 
@@ -141,17 +148,21 @@ export default class ControllerExperience extends soundworks.Experience {
       this.musicSrc.buffer = this.loader.buffers[2];
       this.musicSrc.connect(env);
       this.musicSrc.start(thisTime);
-    });
+    });    
 
     this.dingSynth = new Synth(this.sync, 0.5, dingFunction, (thisTime, nextTime) => { 
       if(hasStartedMusic) {
-        // use time to play a sound at time
-        const src = audioContext.createBufferSource();
-        src.buffer = this.loader.buffers[1];
-        src.connect(audioContext.destination);
-        src.start(nextTime);
+        if(this.delayNextDing) {
+          this.delayNextDing = false;
+        } else {
+          // use time to play a sound at time
+          const src = audioContext.createBufferSource();
+          src.buffer = this.loader.buffers[1];
+          src.connect(audioContext.destination);
+          src.start(nextTime);
 
-        this.send("ding");
+          this.send("ding");          
+        }
       } else {
         hasStartedMusic = true;
       }
