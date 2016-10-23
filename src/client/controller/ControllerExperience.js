@@ -16,29 +16,26 @@ const viewTemplate = `
 const audio = soundworks.audio;
 
 class Synth extends audio.TimeEngine {
-  constructor(sync, period, sendFunction) {
+  constructor(sync, period, countPeriodsFunction, sendFunction) {
     super();
 
     this.sync = sync;
     this.period = period // eight note duration
+    this.countPeriodsFunction = countPeriodsFunction;
     this.sendFunction = sendFunction;
   }
 
   advanceTime(time) {
-    const nextEventNbrPeriod = Math.floor(Math.random() * 8 + 4);
-    console.log("scheduled ding for", nextEventNbrPeriod, "periods");
-    //const nextEventNbrPeriod = 1;
+    const nextEventNbrPeriod = this.countPeriodsFunction();
     const period = nextEventNbrPeriod * this.period;
     const nextTime = time + period;
     
-    const nextSyncTime = this.sync.getAudioTime(nextTime);
-    this.sendFunction(nextSyncTime);
+    this.sendFunction(this.sync.getAudioTime(time), this.sync.getAudioTime(time, nextTime));
 
     return nextTime;
   }
 }
 
-// this.scheduler
 
 // this experience plays a sound when it starts, and plays another sound when
 // other clients join the experience
@@ -49,7 +46,7 @@ export default class ControllerExperience extends soundworks.Experience {
     this.platform = this.require('platform', { features: ['web-audio', 'wake-lock'] });
     this.checkin = this.require('checkin', { showDialog: false });
     this.sync = this.require('sync');
-    this.scheduler = this.require('scheduler');
+    this.scheduler = this.require('scheduler', { sync: true });
     this.loader = this.require('loader', {
       assetsDomain: assetsDomain,
       files: audioFiles,
@@ -75,7 +72,24 @@ export default class ControllerExperience extends soundworks.Experience {
 
     var hasStartedMusic = false;
 
-    this.synth = new Synth(this.sync, 0.5, (nextTime) => { 
+    const dingFunction = () => {
+      const nextEventNbrPeriod = Math.floor(Math.random() * 8 + 4);
+      console.log("scheduled ding for", nextEventNbrPeriod, "periods");
+      return nextEventNbrPeriod;
+    }; 
+
+    this.musicSynth = new Synth(this.sync, 0.5, () => 32, (thisTime, nextTime) => {
+      // play music
+      console.log("starting music");
+
+      const src = audioContext.createBufferSource();
+      //src.loop = true;
+      src.buffer = this.loader.buffers[2];
+      src.connect(audioContext.destination);
+      src.start(thisTime);
+    });
+
+    this.dingSynth = new Synth(this.sync, 0.5, dingFunction, (thisTime, nextTime) => { 
       if(hasStartedMusic) {
         // use time to play a sound at time
         const src = audioContext.createBufferSource();
@@ -83,20 +97,21 @@ export default class ControllerExperience extends soundworks.Experience {
         src.connect(audioContext.destination);
         src.start(nextTime);
 
-        this.send("ding");        
+        this.send("ding");
       } else {
-        // play music
-        const src = audioContext.createBufferSource();
-        src.loop = true;
-        src.buffer = this.loader.buffers[2];
-        src.connect(audioContext.destination);
-        src.start(nextTime);
+        // // play music
+        // const src = audioContext.createBufferSource();
+        // src.loop = true;
+        // src.buffer = this.loader.buffers[2];
+        // src.connect(audioContext.destination);
+        // src.start(nextTime);
 
         hasStartedMusic = true;
       }
     });
 
-    this.scheduler.add(this.synth);
+    this.scheduler.add(this.dingSynth);
+    this.scheduler.add(this.musicSynth);
 
     // play the first loaded buffer immediately
     const src = audioContext.createBufferSource();

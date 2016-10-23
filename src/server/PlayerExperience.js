@@ -37,7 +37,7 @@ export default class PlayerExperience extends Experience {
         }
       }
 
-      throw new Error("Can't fiind other client");
+      throw new Error("Can't find other client");
     }
 
     this.receive(client, 'debugLikelihoods', (likelihoods) => {

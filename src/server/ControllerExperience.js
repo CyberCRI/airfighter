@@ -23,6 +23,10 @@ class ControllerExperience extends Experience {
     });
   }
 
+  isReadyToPlay() {
+    return this.clients.length > 0;
+  }
+
   exit(client) {
     super.exit(client);
   }
