@@ -39,6 +39,10 @@ export default class PlayerExperience extends Experience {
 
       throw new Error("Can't find other client");
     }
+    
+    this.receive(client, 'end', () => {
+      this.experiences.controller.roundIsOver(client.index);
+    })
 
     this.receive(client, 'debugLikelihoods', (likelihoods) => {
       console.log("likelihoods", client.index, likelihoods);
@@ -46,7 +50,7 @@ export default class PlayerExperience extends Experience {
 
     this.receive(client, 'moved', (label, timeProgression) => {
       console.log("REAL moved recieved from", client.index, "label", label, "timeProgression", timeProgression);
-
+      this.send(findOtherClient(), 'move', label);
       //this.send(findOtherClient(), "otherMoved", label);
     });
 

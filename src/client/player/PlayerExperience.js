@@ -53,6 +53,7 @@ export default class PlayerExperience extends soundworks.Experience {
 
     this.lastLabel = null;
     this.lastTimeProgression = null;
+    this.currentLabel = null;
 
     var that = this;
     if (window.DeviceMotionEvent) {
@@ -137,11 +138,12 @@ export default class PlayerExperience extends soundworks.Experience {
 
               that.lastLabel = null;
               that.lastTimeProgression = null;
-
+              that.currentLabel = hhmmResults.likeliest;
               hhmmDecoder.reset();
             }
 
           } else {
+            that.currentLabel = null;
             that.lastLabel = hhmmResults.likeliest;
             that.lastTimeProgression = currentTimeProgression;
           }
@@ -164,8 +166,32 @@ export default class PlayerExperience extends soundworks.Experience {
   }
 
   start() {
-    super.start(); // don't forget this
+    function playSound(index)
+    {
+      const src = audioContext.createBufferSource();
+      src.buffer = this.loader.buffers[index];
+      src.connect(audioContext.destination);
+      src.start(audioContext.currentTime);
+    }
 
+    function soundHealth()
+    {
+      if (health == 4)
+        playSound(8);
+      else if (health == 3)
+        playSound(9);
+      else if (health == 2)
+        playSound(10);
+      else if (health == 1)
+        playSound(11);
+      else if (health == 0)
+      {
+        playSound(12);
+        this.send("end");
+      }
+    }
+    super.start(); // don't forget this
+    this.health = 5;
     this.activePeriod = false;
     this.moved = false;
     this.nextStun = false;
@@ -190,6 +216,50 @@ export default class PlayerExperience extends soundworks.Experience {
 
       this.view.content.title = `Your turn`;
       this.view.render();
+    });
+
+    this.receive('move', (label) => {
+        if (label == 'SuperUppercut')
+        {
+          if (this.currentLabel != 'SuperUppercut')
+          {
+            playSound(7);
+            this.health -= 2;
+          }
+          else
+          {
+            playSound(6);
+          }
+        }
+        else if (label == 'Uppercut')
+        {
+          if (this.currentLabel == 'Uppercut')
+          {
+            playSound(6);
+          }
+          else if (this.currentLabel == 'Punch')
+          {
+            //nothing
+          }
+          else
+          {
+            playSound(7);
+            this.health -= 1;
+          }
+        }
+        else if (label == 'Punch')
+        {
+          if (this.currentLabel == 'Punch' || this.currentLabel == 'Block')
+          {
+            playSound(6);
+          }
+          else
+          {
+            playSound(7)
+            health -= 1;
+            soundHealth();
+          }
+        }
     });
 
     this.receive('ding', () => {
