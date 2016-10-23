@@ -93,48 +93,53 @@ export default class PlayerExperience extends soundworks.Experience {
             && that.lastTimeProgression <= 0.6 
             && currentTimeProgression > 0.6)
           {
-            if(that.activePeriod) 
+            if (that.moved == false)
             {
-              that.send("moved", hhmmResults.likeliest, currentTimeProgression);
-            }
-            else 
-            {
-              that.send("failed", hhmmResults.likeliest, currentTimeProgression); 
-              const src = audioContext.createBufferSource();
-              src.buffer = that.loader.buffers[5];
-              src.connect(audioContext.destination);
-              src.start(audioContext.currentTime);
-            }
+              that.moved = true;
+              if(that.activePeriod) 
+              {
+                that.send("moved", hhmmResults.likeliest, currentTimeProgression);
+              }
+              else
+              {
+                that.send("failed", hhmmResults.likeliest, currentTimeProgression); 
+                that.srcSoundStun = audioContext.createBufferSource();
+                that.srcSoundStun.loop = true;
+                that.srcSoundStun.buffer = that.loader.buffers[5];
+                that.srcSoundStun.connect(audioContext.destination);
+                that.srcSoundStun.start(audioContext.currentTime);
+                that.nextStun = true;
+              }
 
-            if(hhmmResults.likeliest == "Punch") {
-              const src = audioContext.createBufferSource();
-              src.buffer = that.loader.buffers[1];
-              src.connect(audioContext.destination);
-              src.start(audioContext.currentTime);
-            } else if(hhmmResults.likeliest == "Block") {
-              const src = audioContext.createBufferSource();
-              src.buffer = that.loader.buffers[2];
-              src.connect(audioContext.destination);
-              src.start(audioContext.currentTime);
-            }
-            else if(hhmmResults.likeliest == "Uppercut") {
-              const src = audioContext.createBufferSource();
-              src.buffer = that.loader.buffers[3];
-              src.connect(audioContext.destination);
-              src.start(audioContext.currentTime);
-            }
-            else if(hhmmResults.likeliest == "SuperUppercut") {
-              const src = audioContext.createBufferSource();
-              src.buffer = that.loader.buffers[4];
-              src.connect(audioContext.destination);
-              src.start(audioContext.currentTime);
-            }
+              if(hhmmResults.likeliest == "Punch") {
+                const src = audioContext.createBufferSource();
+                src.buffer = that.loader.buffers[1];
+                src.connect(audioContext.destination);
+                src.start(audioContext.currentTime);
+              } else if(hhmmResults.likeliest == "Block") {
+                const src = audioContext.createBufferSource();
+                src.buffer = that.loader.buffers[2];
+                src.connect(audioContext.destination);
+                src.start(audioContext.currentTime);
+              }
+              else if(hhmmResults.likeliest == "Uppercut") {
+                const src = audioContext.createBufferSource();
+                src.buffer = that.loader.buffers[3];
+                src.connect(audioContext.destination);
+                src.start(audioContext.currentTime);
+              }
+              else if(hhmmResults.likeliest == "SuperUppercut") {
+                const src = audioContext.createBufferSource();
+                src.buffer = that.loader.buffers[4];
+                src.connect(audioContext.destination);
+                src.start(audioContext.currentTime);
+              }
 
+              that.lastLabel = null;
+              that.lastTimeProgression = null;
 
-            that.lastLabel = null;
-            that.lastTimeProgression = null;
-
-            hhmmDecoder.reset();
+              hhmmDecoder.reset();
+            }
 
           } else {
             that.lastLabel = hhmmResults.likeliest;
@@ -162,6 +167,9 @@ export default class PlayerExperience extends soundworks.Experience {
     super.start(); // don't forget this
 
     this.activePeriod = false;
+    this.moved = false;
+    this.nextStun = false;
+    this.srcSoundStun = null;
 
     if (!this.hasStarted)
       this.init();
@@ -185,7 +193,15 @@ export default class PlayerExperience extends soundworks.Experience {
     });
 
     this.receive('ding', () => {
-      this.activePeriod = true;
+      if (this.nextStun == false)
+      {
+        this.activePeriod = true;
+        this.moved = false;
+        if (this.srcSoundStun)
+          this.srcSoundStun.stop();
+      }
+      else
+        this.nextStun = false;
       // This is ugly -> wait 4 beats = 2 s
       setTimeout(() => { this.activePeriod = false; }, 2000);
     });
