@@ -57,6 +57,7 @@ export default class PlayerExperience extends soundworks.Experience {
     this.lastLabel = null;
     this.lastTimeProgression = null;
     this.currentLabel = null;
+    this.movementToSend = null;
 
     this.vibrator = new Vibrator();
 
@@ -102,9 +103,12 @@ export default class PlayerExperience extends soundworks.Experience {
             if (that.moved == false)
             {
               that.moved = true;
+              that.currentLabel = hhmmResults.likeliest;
+
               if(that.activePeriod) 
               {
-                that.send("moved", hhmmResults.likeliest, currentTimeProgression);
+                //that.send("moved", hhmmResults.likeliest, currentTimeProgression);
+                that.movementToSend = [hhmmResults.likeliest, currentTimeProgression];
               }
               else
               {
@@ -148,7 +152,6 @@ export default class PlayerExperience extends soundworks.Experience {
 
               that.lastLabel = null;
               that.lastTimeProgression = null;
-              that.currentLabel = hhmmResults.likeliest;
               hhmmDecoder.reset();
             }
           } else {
@@ -294,7 +297,13 @@ export default class PlayerExperience extends soundworks.Experience {
       else
         this.nextStun = false;
       // This is ugly -> wait 4 beats = 2 s
-      setTimeout(() => { this.activePeriod = false; }, 2000);
+      setTimeout(() => { 
+        this.activePeriod = false; 
+        if(this.movementToSend) {
+          this.send("moved", this.movementToSend[0], this.movementToSend[1]);
+          this.movementToSend = null;
+        }
+      }, 2000);
     });
 
     this.receive('startRound', () => {

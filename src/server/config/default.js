@@ -49,7 +49,7 @@ export default {
     maxClientsPerPosition: 1,
     // maximum number of positions (may limit or be limited by the number of
     // labels and/or coordinates)
-    capacity: Infinity,
+    capacity: 3,
   },
 
   // socket.io configuration
