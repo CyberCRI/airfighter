@@ -1,7 +1,10 @@
-# Soundworks Application Template
+# Airfighter - competitive boxing-in-the-air-with-a-phone-in-your-hand game
 
-> This is a project template for developing [*Soundworks*](https://github.com/collective-soundworks/soundworks/) applications.  
-> The template also includes comprehensive comments in the source files.
+Based on the [Soundworks application template](https://github.com/collective-soundworks/soundworks/).
+
+The rest of this README is the soundworks documentation:
+
+
 
 [//]: # (For a complete documentation of the *Soundworks* framework, please refer to http://collective-soundworks.github.io/soundworks/.)
 
