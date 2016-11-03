@@ -1,5 +1,7 @@
 # Airfighter - competitive boxing-in-the-air-with-a-phone-in-your-hand game
 
+![Airfighter logo](Air Fighter logo.png)
+
 Based on the [Soundworks application template](https://github.com/collective-soundworks/soundworks/).
 
 The rest of this README is the soundworks documentation:
